@@ -57,7 +57,7 @@ Dzięki temu może służyć jako prywatny bot, maszt informacyjny lub interakty
 1. Sklonuj repozytorium:
 ```
 
-git clone https://github.com/<twoj-login>/meshtastic-radio-control.git
+git clone https://github.com/LOCOSP/mesh-tower-bot.git
 cd meshtastic-radio-control
 
 ```
