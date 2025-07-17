@@ -2,6 +2,8 @@
 
 Projekt umożliwia automatyczne i interaktywne sterowanie radiem Meshtastic podłączonym przez port USB z poziomu Pythona. Obsługuje zarówno ręczne wiadomości tekstowe, jak i automatyczne odpowiedzi na wybrane komendy przez sieć LoRa Mesh, z użyciem oficjalnej biblioteki Meshtastic dla Pythona.
 
+<img src="/media/demo.jpg" alt="Opis" width="200" height="300">
+
 ---
 
 ## Spis treści
