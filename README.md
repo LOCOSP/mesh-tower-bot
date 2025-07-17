@@ -58,7 +58,7 @@ Dzięki temu może służyć jako prywatny bot, maszt informacyjny lub interakty
 ```
 
 git clone https://github.com/LOCOSP/mesh-tower-bot.git
-cd meshtastic-radio-control
+cd mesh-tower-bot
 
 ```
 
