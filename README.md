@@ -1,8 +1,6 @@
 # Meshtastic Radio Python Control
 
-Projekt umożliwia automatyczne i interaktywne sterowanie radiem Meshtastic podłączonym przez port USB z poziomu Pythona. Obsługuje zarówno ręczne wiadomości tekstowe, jak i automatyczne odpowiedzi na wybrane komendy przez sieć LoRa Mesh, z użyciem oficjalnej biblioteki Meshtastic dla Pythona.
-
-<img src="/media/demo.jpg" alt="Opis" width="200" height="300">
+Projekt umożliwia automatyczne i manualne sterowanie radiem Meshtastic podłączonym po USB z Pythona. Obsługuje zarówno wiadomości tekstowe, jak i automatyczne odpowiedzi na skonfigurowane komendy z sieci LoRa Mesh, korzystając z oficjalnej biblioteki Meshtastic.
 
 ---
 
@@ -27,30 +25,37 @@ Projekt umożliwia automatyczne i interaktywne sterowanie radiem Meshtastic pod�
 Skrypt łączy się automatycznie z radiem Meshtastic po USB i:
 - odbiera komunikaty tekstowe z sieci mesh,
 - pozwala wysyłać wiadomości ręcznie z linii poleceń,
-- automatycznie reaguje na wybrane słowa-klucze (np. `maszt_info`, `maszt_status`) udzielając konfigurowalnych odpowiedzi (status, uptime, liczba widocznych node’ów itp.).
+- automatycznie reaguje na wybrane słowa-klucze (np. `maszt_info`, `maszt_status`, `maszt_pogoda`) udzielając konfigurowalnych odpowiedzi (status, uptime, liczba widocznych węzłów, aktualna pogoda w Opolu itp.).
 
-Dzięki temu może służyć jako prywatny bot, maszt informacyjny lub interaktywny terminal dla sieci Meshtastic.
+Dzięki temu może służyć jako prywatny bot, maszt informacyjny, pogodynka lub interaktywny terminal Meshtastic.
 
 ---
 
 ## Funkcje
 
 - **Odbiór wszystkich wiadomości** z sieci Meshtastic na Twój node.
-- **Ręczne wysyłanie wiadomości** z linii poleceń (interaktywny chat mesh przez LoRa).
-- **Automatyczne odpowiedzi** na hasła:
-    - `maszt_info`: nazwa oraz uptime urządzenia,
-    - `maszt_status`: uptime i liczba ostatnio aktywnych węzłów w sieci,
-    - łatwa rozbudowa o własne polecenia.
-- **Działa w trybie ciągłym** — jednocześnie jako bot i terminal.
+- **Ręczne wysyłanie wiadomości** z linii poleceń (interaktywny chat LoRa).
+- **Automatyczne odpowiedzi na komendy**:
+    - `maszt_info`: nazwa bota, wersja, uptime, autor, lokalizacja
+    - `maszt_status`: uptime, lokalizacja, liczba węzłów widzianych i bezpośrednich oraz wszystkich znanych
+    - `maszt_pogoda`: dynamicznie pobierana aktualna pogoda w Opolu przez OpenWeatherMap
+- **Przykład obsługi wielu słów-klucz**
+- **Konfiguracja klucza API przez `.env`**
+- **Modularność – łatwa rozbudowa o kolejne komendy**
+- **Heurystyczne wyliczanie liczby bezpośrednich sąsiadów mesh**
+- **Działa jednocześnie jako bot i terminal**
 
 ---
 
 ## Wymagania
 
 - Python **3.8+**
-- [meshtastic](https://github.com/meshtastic/python) (`pip install meshtastic`)
-- `pypubsub` (`pip install pubsub`)
-- Radio Meshtastic z firmware podłączone do portu szeregowego (np. `/dev/ttyUSB0` na Linuxie)
+- [meshtastic](https://github.com/meshtastic/python)
+- `pypubsub`
+- `requests`
+- `python-dotenv`
+- Konto i klucz API OpenWeatherMap (do funkcji pogody)
+- Radio Meshtastic z firmware, podłączone do portu szeregowego (np. `/dev/ttyUSB0`)
 
 ---
 
@@ -75,7 +80,14 @@ source venv/bin/activate
 3. Zainstaluj zależności:
 ```
 
-pip install meshtastic pubsub
+pip install meshtastic pubsub requests python-dotenv
+
+```
+
+4. Stwórz plik `.env` w katalogu projektu z zawartością:
+```
+
+OPENWEATHER_API_KEY=tu_wstaw_swoj_klucz_api
 
 ```
 
@@ -83,43 +95,61 @@ pip install meshtastic pubsub
 
 ## Szybki start
 
-1. Podłącz urządzenie Meshtastic do portu USB.
+1. Podłącz Meshtastic do USB.
 2. Upewnij się, że Twój użytkownik ma prawo dostępu do portu (patrz: [Konfiguracja uprawnień](#konfiguracja-uprawnień)).
-3. Uruchom skrypt:
+3. Uruchom:
 ```
 
 python3 app.py
 
 ```
-4. Wpisuj własne wiadomości w konsoli albo testuj z telefonu/aplikacji Meshtastic.
+4. Wpisuj wiadomości lub wysyłaj komendy z aplikacji Meshtastic.
 
 ---
 
 ## Automatyczne komendy
 
-Skrypt automatycznie odpowiada na wiadomości z określonym słowem kluczowym.  
-Przykład domyślnych odpowiedzi:
-
 - **maszt_info**  
-Odpowiedź:  
-`nazwa: Maszt Opole uptime: 1d 4h 12m 53s`
+Testowo zwraca:
+```
 
+nazwa: Meshtastic Tower Bot
+wersja: 1.0
+uptime: <czas>
+autor: LSP
+Lokalizacja: Opole
+
+```
 - **maszt_status**  
-Odpowiedź:  
-`Maszt aktywny. Uptime: 1d 4h 12m 53s. Bezpośrednio widocznych węzłów: 3`
+Testowo zwraca:
+```
 
-Możesz samodzielnie modyfikować słowa kluczowe oraz treść odpowiedzi w kodzie źródłowym.
+Maszt jest aktywny. Uptime: <czas>
+Lokalizacja: JO80XQ42
+Węzły w zasięgu (ostatnie 60s): <liczba>
+Wszystkich węzłów: <liczba>
+
+```
+- **maszt_pogoda**  
+Pobiera pogodę online i zwraca:
+```
+
+Maszt jest aktywny. Uptime: <czas>
+Pogoda w Opole: Zachmurzenie umiarkowane, temp.: 21.4°C (odczuwalna 22.0°C), ciśnienie: 1011 hPa, wilgotność: 63%, wiatr: 3 m/s.
+W sieci widocznych węzłów: <liczba>
+
+```
 
 ---
 
 ## Konfiguracja uprawnień
 
-Aby mieć dostęp do portu szeregowego (np. `/dev/ttyUSB0`), dodaj się do grupy `dialout` i zrestartuj sesję:
+Aby mieć dostęp do portu szeregowego (np. `/dev/ttyUSB0`), dodaj się do grupy `dialout`:
 ```
 
 sudo usermod -a -G dialout \$USER
 
-# potem wyloguj się i zaloguj ponownie (lub zrestartuj komputer)
+# Wyloguj się i zaloguj ponownie (lub zrestartuj komputer)
 
 ```
 
@@ -127,17 +157,17 @@ sudo usermod -a -G dialout \$USER
 
 ## Rozbudowa
 
-Aby dodać nową komendę, edytuj funkcję obsługującą odbiór wiadomości w pliku `app.py`:
+Aby dodać nową komendę, edytuj sekcję słów kluczowych w funkcji `onReceive` w pliku `app.py`:
 
 ```
 
-if message_string.strip().lower() == "twoje_haslo":
-reply = "Twoja treść odpowiedzi"
+if message_string.strip().lower() == "nowa_komenda":
+reply = "Moja nowa odpowiedź"
 interface.sendText(reply, destinationId=dest_id)
 
 ```
 
-Możesz też zmienić nazwę, uptime, dodać własne polecenia lub logikę bota.
+Możesz łatwo dodać obsługę innych API, dowolne odpowiedzi czy kolejne integracje.
 
 ---
 
@@ -146,3 +176,6 @@ Możesz też zmienić nazwę, uptime, dodać własne polecenia lub logikę bota.
 Projekt otwarty, przeznaczony do swobodnego wykorzystania.  
 Meshtastic® jest zastrzeżonym znakiem towarowym Meshtastic LLC.  
 Autorzy nie odpowiadają za wykorzystanie oprogramowania.
+
+---
+```
